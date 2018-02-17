@@ -2,7 +2,7 @@ import secrets from 'secrets.js-next';
 import bip39 from 'bip39';
 import {entropyToMnemonic} from './wordEncode.js';
 import {mnemonicToEntropy} from './wordEncode.js';
-import {cipher} from 'crypto';
+import crypto from 'crypto';
 
 function repeat(char, number) {
   var string = "";
