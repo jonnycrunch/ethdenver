@@ -15,10 +15,13 @@ function repeat(char, number) {
 var KeySplit = {
   mnemonicToSSS(mnemonic, shareCount, threshold, password) {
     var key = bip39.mnemonicToEntropy(mnemonic);
-    var c = crypto.createCipher("aes128", password);
+    var salt = crypto.randomBytes(8);
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var c = crypto.createCipher("aes128", pbkdf2Pass);
     var encKey = c.update(key, 'hex', 'hex');
     encKey += c.final('hex')
-    var shares = secrets.share(encKey, shareCount, threshold);
+    var splitVal = salt.toString("hex") + encKey;
+    var shares = secrets.share(splitVal, shareCount, threshold);
     var mnemonicShares = [];
     for(var share of shares) {
       mnemonicShares.push(entropyToMnemonic(share + "000"));
@@ -31,8 +34,11 @@ var KeySplit = {
       var shareHex = mnemonicToEntropy(share);
       shares.push(shareHex.slice(0, shareHex.length - 3));
     }
-    var encKey = secrets.combine(shares);
-    var d = crypto.createDecipher("aes128", password);
+    var splitVal = secrets.combine(shares);
+    var salt = new Buffer(splitVal.slice(0, 16), "hex");
+    var encKey = splitVal.slice(16);
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var d = crypto.createDecipher("aes128", pbkdf2Pass);
     var rawKey = d.update(encKey, "hex", "hex");
     rawKey += d.final("hex");
     return bip39.entropyToMnemonic(rawKey);
