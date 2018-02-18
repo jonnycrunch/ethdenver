@@ -1,64 +1,11 @@
-import Web3 from "web3";
-import ProviderEngine from "web3-provider-engine";
-import FixtureSubprovider from "web3-provider-engine/subproviders/fixture.js";
-import FilterSubprovider from "web3-provider-engine/subproviders/filters.js";
-import WalletSubprovider from "ethereumjs-wallet/provider-engine";
-import Web3Subprovider from "web3-provider-engine/subproviders/web3.js";
 
 import ShardStore from "../solidity/build/contracts/ShardStore.json";
 
-import Wallet from "ethereumjs-wallet";
 import BigNumber from "bignumber.js";
 
 export class KeySplitContractInterface {
   constructor (options={}) {
-    var rpcURL = options.rpcURL || "https://ropsten.infura.io/atjfYkLXBNdLI0zSm9eE"
-    if(typeof window === 'undefined') {
-      var window = {};
-    }
-    this.localStorage = options.localStorage || window.localStorage;
-    if(options.currentProvider) {
-      this.web3 = new Web3(options.currentProvider);
-    } else if(window && window.web3) {
-      this.web3 = new Web3(window.web3.currentProvider);
-    } else {
-      var privateKey = options.privateKey || localStorage.getItem("localPrivateKey");
-      if(!privateKey) {
-        privateKey = Wallet.generate().getPrivateKeyString().slice(2);
-      }
-      var wallet = Wallet.fromPrivateKey(new Buffer(privateKey, "hex"));
-      this.engine = new ProviderEngine();
-      this.web3 = new Web3(this.engine);
-      // static results
-      this.engine.addProvider(new FixtureSubprovider({
-        web3_clientVersion: 'ProviderEngine/v0.0.0/javascript',
-        net_listening: true,
-        eth_hashrate: '0x00',
-        eth_mining: false,
-        eth_syncing: true,
-      }))
-
-      // filters
-      this.engine.addProvider(new FilterSubprovider())
-
-      // id mgmt
-      this.engine.addProvider(new WalletSubprovider(wallet, {}))
-
-      this.engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcURL)));
-
-      this.engine.on('block', function(block) {
-        console.log('BLOCK CHANGED:', '#'+block.number.toString('hex'), '0x'+block.hash.toString('hex'))
-      })
-
-      // network connectivity error
-      this.engine.on('error', function(err){
-        // report connectivity errors
-        console.error(err.stack)
-      });
-
-      // start polling for blocks
-      this.engine.start()
-    }
+    this.web3 = options.web3;
     this.contract = this.web3.eth.contract(ShardStore.abi).at(options.at || "0x8cdaf0cd259887258bc13a92c0a6da92698644c0");
 
     if(this.localStorage) {
@@ -163,14 +110,22 @@ export class KeySplitContractInterface {
         resolve([]);
       }
       this.web3.eth.getAccounts((err, accounts) => {
-        var shardIds = JSON.parse(this.localStorage.getItem(`${accounts[0]}:shards`));
+        var shardJSON = this.localStorage.getItem(`${accounts[0]}:shards`);
+        if(!shardJSON) {
+          reject("No shards yet");
+        }
+        var shardIds = JSON.parse(shardJSON);
         var shards = [];
         for(var shardId of shardIds) {
           var shard = JSON.parse(this.localStorage.getItem(`shard:${shardId}`));
           shard.update = this.watchStorageConfirmed(shardId);
         }
+        resolve(shards);
       });
     })
+  }
+  getHeldShards() {
+    return JSON.parse(this.localStorage.getItem(`${this.account}:heldShards`));
   }
   confirmStoredShards() {
     return new Promise((resolve, reject) => {

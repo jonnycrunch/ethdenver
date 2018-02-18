@@ -4,6 +4,7 @@ import createHash from 'create-hash';
 import unorm from 'unorm';
 import crypto from 'crypto';
 import rp from 'request-promise-native';
+import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 import ProviderEngine from 'web3-provider-engine';
 import FixtureSubprovider from 'web3-provider-engine/subproviders/fixture.js';
@@ -11,7 +12,6 @@ import FilterSubprovider from 'web3-provider-engine/subproviders/filters.js';
 import WalletSubprovider from 'ethereumjs-wallet/provider-engine';
 import Web3Subprovider from 'web3-provider-engine/subproviders/web3.js';
 import Wallet from 'ethereumjs-wallet';
-import BigNumber from 'bignumber.js';
 
 /*
  * This module does bip39-like encoding of byte strings to words. It removes
@@ -886,53 +886,7 @@ var KeySplitContractInterface = function () {
 
     _classCallCheck$1(this, KeySplitContractInterface);
 
-    var rpcURL = options.rpcURL || "https://ropsten.infura.io/atjfYkLXBNdLI0zSm9eE";
-    if (typeof window === 'undefined') {
-      var window = {};
-    }
-    this.localStorage = options.localStorage || window.localStorage;
-    if (options.currentProvider) {
-      this.web3 = new Web3(options.currentProvider);
-    } else if (window && window.web3) {
-      this.web3 = new Web3(window.web3.currentProvider);
-    } else {
-      var privateKey = options.privateKey || localStorage.getItem("localPrivateKey");
-      if (!privateKey) {
-        privateKey = Wallet.generate().getPrivateKeyString().slice(2);
-      }
-      var wallet = Wallet.fromPrivateKey(new Buffer(privateKey, "hex"));
-      this.engine = new ProviderEngine();
-      this.web3 = new Web3(this.engine);
-      // static results
-      this.engine.addProvider(new FixtureSubprovider({
-        web3_clientVersion: 'ProviderEngine/v0.0.0/javascript',
-        net_listening: true,
-        eth_hashrate: '0x00',
-        eth_mining: false,
-        eth_syncing: true
-      }));
-
-      // filters
-      this.engine.addProvider(new FilterSubprovider());
-
-      // id mgmt
-      this.engine.addProvider(new WalletSubprovider(wallet, {}));
-
-      this.engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcURL)));
-
-      this.engine.on('block', function (block) {
-        console.log('BLOCK CHANGED:', '#' + block.number.toString('hex'), '0x' + block.hash.toString('hex'));
-      });
-
-      // network connectivity error
-      this.engine.on('error', function (err) {
-        // report connectivity errors
-        console.error(err.stack);
-      });
-
-      // start polling for blocks
-      this.engine.start();
-    }
+    this.web3 = options.web3;
     this.contract = this.web3.eth.contract(ShardStore.abi).at(options.at || "0x8cdaf0cd259887258bc13a92c0a6da92698644c0");
 
     if (this.localStorage) {
@@ -1143,7 +1097,11 @@ var KeySplitContractInterface = function () {
           resolve([]);
         }
         _this6.web3.eth.getAccounts(function (err, accounts) {
-          var shardIds = JSON.parse(_this6.localStorage.getItem(accounts[0] + ":shards"));
+          var shardJSON = _this6.localStorage.getItem(accounts[0] + ":shards");
+          if (!shardJSON) {
+            reject("No shards yet");
+          }
+          var shardIds = JSON.parse(shardJSON);
           var shards = [];
           var _iteratorNormalCompletion5 = true;
           var _didIteratorError5 = false;
@@ -1170,8 +1128,15 @@ var KeySplitContractInterface = function () {
               }
             }
           }
+
+          resolve(shards);
         });
       });
+    }
+  }, {
+    key: "getHeldShards",
+    value: function getHeldShards() {
+      return JSON.parse(this.localStorage.getItem(this.account + ":heldShards"));
     }
   }, {
     key: "confirmStoredShards",
@@ -1219,5 +1184,285 @@ var KeySplitContractInterface = function () {
   return KeySplitContractInterface;
 }();
 
-export { KeySplit, KeySplitContractInterface };
+var _createClass$3 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck$3(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var PasswordManagement = function () {
+  function PasswordManagement(localStorage) {
+    _classCallCheck$3(this, PasswordManagement);
+
+    this.localStorage = localStorage;
+  }
+
+  _createClass$3(PasswordManagement, [{
+    key: 'hashPass',
+    value: function hashPass(password) {
+      var salt = crypto.randomBytes(8);
+      return new Promise(function (resolve, reject) {
+        crypto.pbkdf2(password, salt, 100000, 16, 'sha256', function (err, pbkdf2Pass) {
+          if (err) {
+            reject(err);
+          }
+          resolve({ hash: pbkdf2Pass.toString("hex"), salt: salt.toString("hex") });
+        });
+      });
+    }
+  }, {
+    key: 'checkPass',
+    value: function checkPass(password, hash, salt) {
+      return new Promise(function (resolve, reject) {
+        crypto.pbkdf2(password, new Buffer(salt, "hex"), 100000, 16, 'sha256', function (err, pbkdf2Pass) {
+          if (err) {
+            reject(err);
+          }
+          resolve(pbkdf2Pass.equals(new Buffer(hash, "hex")));
+        });
+      });
+    }
+  }, {
+    key: 'storePass',
+    value: function storePass(password, account) {
+      var _this = this;
+
+      return this.hashPass(password).then(function (result) {
+        _this.localStorage.setItem(account + ':password', JSON.stringify(result));
+      });
+    }
+  }, {
+    key: 'checkAccountPass',
+    value: function checkAccountPass(password, account) {
+      var pdata = JSON.parse(this.localStorage.getItem(account + ':password'));
+      return this.checkPass(password, pdata.hash, pdata.salt);
+    }
+  }, {
+    key: 'hasAccountPass',
+    value: function hasAccountPass(account) {
+      return !!this.localStorage.getItem(account + ':password');
+    }
+  }]);
+
+  return PasswordManagement;
+}();
+
+var _createClass$2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var App = function () {
+  function App() {
+    var _this = this;
+
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    _classCallCheck$2(this, App);
+
+    var rpcURL = options.rpcURL || "https://ropsten.infura.io/atjfYkLXBNdLI0zSm9eE";
+    if (typeof window === 'undefined') {
+      var window = {};
+    }
+    this.localStorage = options.localStorage || window.localStorage;
+    if (options.currentProvider) {
+      this.web3 = new Web3(options.currentProvider);
+    } else if (window && window.web3) {
+      this.web3 = new Web3(window.web3.currentProvider);
+    } else {
+      var privateKey = options.privateKey || localStorage.getItem("localPrivateKey");
+      if (!privateKey) {
+        privateKey = Wallet.generate().getPrivateKeyString().slice(2);
+      }
+      var wallet = Wallet.fromPrivateKey(new Buffer(privateKey, "hex"));
+      this.engine = new ProviderEngine();
+      this.web3 = new Web3(this.engine);
+      // static results
+      this.engine.addProvider(new FixtureSubprovider({
+        web3_clientVersion: 'ProviderEngine/v0.0.0/javascript',
+        net_listening: true,
+        eth_hashrate: '0x00',
+        eth_mining: false,
+        eth_syncing: true
+      }));
+
+      // filters
+      this.engine.addProvider(new FilterSubprovider());
+
+      // id mgmt
+      this.engine.addProvider(new WalletSubprovider(wallet, {}));
+
+      this.engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcURL)));
+
+      this.engine.on('block', function (block) {
+        console.log('BLOCK CHANGED:', '#' + block.number.toString('hex'), '0x' + block.hash.toString('hex'));
+      });
+
+      // network connectivity error
+      this.engine.on('error', function (err) {
+        // report connectivity errors
+        console.error(err.stack);
+      });
+
+      // start polling for blocks
+      this.engine.start();
+    }
+    this.PasswordManagement = new PasswordManagement(this.localStorage);
+    this.ContractInterface = new KeySplitContractInterface({ web3: this.web3 });
+    this.KeySplitPromise = new Promise(function (resolve, reject) {
+      _this.ksResolve = resolve;
+      _this.ksReject = reject;
+    });
+
+    this.account = new Promise(function (resolve, reject) {
+      _this.web3.eth.getAccounts(function (err, accounts) {
+        if (err) {
+          reject(err);
+        }
+        resolve(accounts[0]);
+      });
+    });
+  }
+
+  _createClass$2(App, [{
+    key: 'hasAccount',
+    value: function hasAccount() {
+      var _this2 = this;
+
+      return this.account.then(function (account) {
+        return _this2.PasswordManagement.hasAccountPass(account);
+      });
+    }
+  }, {
+    key: 'signUp',
+    value: function signUp(password) {
+      var _this3 = this;
+
+      return this.account.then(function (account) {
+        _this3.ksResolve(new KeySplit({ account: account, password: password }));
+        return _this3.PasswordManagement.storePass(password, account);
+      });
+    }
+  }, {
+    key: 'signIn',
+    value: function signIn(password) {
+      var _this4 = this;
+
+      return this.account.then(function (account) {
+        var result = _this4.checkAccountPass(password, account);
+        result.then(function () {
+          _this4.ksResolve(new KeySplit({ account: account, password: password }));
+        });
+        return result;
+      });
+    }
+  }, {
+    key: 'confirmFromUrlHash',
+    value: function confirmFromUrlHash() {
+      var _this5 = this;
+
+      return new Promise(function (resolve, reject) {
+        var hash = window.location.hash.slice(1);
+        if (!hash) {
+          reject("No shard in url");
+        }
+        _this5.KeySplitPromise.then(function (KeySplit$$1) {
+          return KeySplit$$1.downloadShard(hash).then(function (shardMnemonic) {
+            return KeySplit$$1.saveShard(shardMnemonic);
+          });
+        }).then(function (shardId) {
+          return _this5.KeySplitContractInterface.confirmStoredShards();
+        });
+      });
+    }
+  }, {
+    key: 'splitSeedAndUpload',
+    value: function splitSeedAndUpload(seed) {
+      this.KeySplitPromise.then(function (KeySplit$$1) {
+        return KeySplit$$1.mnemonicToSSS(seed, 5, 3).then(function (mnemonicShards) {
+          var shards = [];
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = mnemonicShards[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var shard = _step.value;
+
+              shards.push(KeySplit$$1.uploadShard(shard));
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          return Promise.all(shards);
+        });
+      }).then(function (results) {
+        var urls = [];
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = results[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var result = _step2.value;
+
+            urls.push('' + window.location.origin + window.location.pathame + '#' + result.objectid + ':' + result.key.toString("base64"));
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+
+        return urls;
+      });
+    }
+  }, {
+    key: 'distributedShardData',
+    value: function distributedShardData() {
+      return this.KeySplitContractInterface.getShardStatus();
+    }
+  }, {
+    key: 'heldShardData',
+    value: function heldShardData() {
+      return getHeldShards();
+    }
+  }, {
+    key: 'currentBlock',
+    value: function currentBlock() {
+      var _this6 = this;
+
+      return new Promise(function (resolve, reject) {
+        _this6.web3.getBlockNumber(function (err, blocknum) {
+          if (err) {
+            reject(err);
+          }
+          resolve(blocknum);
+        });
+      });
+    }
+  }]);
+
+  return App;
+}();
+
+export { KeySplit, KeySplitContractInterface, App };
 //# sourceMappingURL=index.es.js.map
