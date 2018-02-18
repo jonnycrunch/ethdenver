@@ -46,7 +46,7 @@ class KeySplit {
     var key = bip39.mnemonicToEntropy(mnemonic);
     var salt = crypto.randomBytes(8);
     return new Promise((resolve, reject) => {
-      return crypto.pbkdf2(password, salt, 100000, 128, 'sha512', (err, pbkdf2Pass) => {
+      return crypto.pbkdf2(password, salt, 100000, 16, 'sha512', (err, pbkdf2Pass) => {
         if(err) { reject(err) }
         var c = crypto.createCipher("aes128", pbkdf2Pass);
         var encKey = c.update(key, 'hex', 'hex');
@@ -72,7 +72,7 @@ class KeySplit {
     var salt = new Buffer(splitVal.slice(0, 16), "hex");
     var encKey = splitVal.slice(16);
     return new Promise((resolve, reject) => {
-      return crypto.pbkdf2(password, salt, 100000, 128, 'sha512', (err, pbkdf2Pass) => {
+      return crypto.pbkdf2(password, salt, 100000, 16, 'sha512', (err, pbkdf2Pass) => {
         if(err) { reject(err) }
         var d = crypto.createDecipher("aes128", pbkdf2Pass);
         var rawKey = d.update(encKey, "hex", "hex");
@@ -113,7 +113,7 @@ class KeySplit {
   saveShard(shard, password) {
     password = password || passwordStore[this];
     var salt = crypto.randomBytes(8);
-    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 16, 'sha512');
     var c = crypto.createCipher("aes128", pbkdf2Pass);
     var encKey = c.update(key, 'hex', 'hex');
     encKey += c.final('hex')

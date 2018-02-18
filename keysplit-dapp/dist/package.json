@@ -20,6 +20,7 @@
     "browserify": "^14.5.0",
     "request-promise-native": "^1.0.5",
     "secrets.js-next": "^0.1.11",
+    "uuid": "^3.2.1",
     "web3": "^0.20.2"
   }
 }
