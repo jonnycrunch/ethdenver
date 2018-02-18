@@ -172,6 +172,21 @@ export class KeySplitContractInterface {
       });
     })
   }
+  confirmStoredShards() {
+    return new Promise((resolve, reject) => {
+      if(!this.localStorage) {
+        resolve([]);
+      }
+      var heldShards = JSON.parse(this.localStorage.getItem(`${this.account}:heldShards`));
+      var currentShards = [];
+      for(var shardId of heldShards) {
+        if(this.localStorage.getItem(`encShard${shardId}`)) {
+          currentShards.push(shardId);
+        }
+      }
+      return confirmStorage(currentShards);
+    });
+  }
 
 
 

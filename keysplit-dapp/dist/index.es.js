@@ -1173,6 +1173,47 @@ var KeySplitContractInterface = function () {
         });
       });
     }
+  }, {
+    key: "confirmStoredShards",
+    value: function confirmStoredShards() {
+      var _this7 = this;
+
+      return new Promise(function (resolve, reject) {
+        if (!_this7.localStorage) {
+          resolve([]);
+        }
+        var heldShards = JSON.parse(_this7.localStorage.getItem(_this7.account + ":heldShards"));
+        var currentShards = [];
+        var _iteratorNormalCompletion6 = true;
+        var _didIteratorError6 = false;
+        var _iteratorError6 = undefined;
+
+        try {
+          for (var _iterator6 = heldShards[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var shardId = _step6.value;
+
+            if (_this7.localStorage.getItem("encShard" + shardId)) {
+              currentShards.push(shardId);
+            }
+          }
+        } catch (err) {
+          _didIteratorError6 = true;
+          _iteratorError6 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+              _iterator6.return();
+            }
+          } finally {
+            if (_didIteratorError6) {
+              throw _iteratorError6;
+            }
+          }
+        }
+
+        return confirmStorage(currentShards);
+      });
+    }
   }]);
 
   return KeySplitContractInterface;
