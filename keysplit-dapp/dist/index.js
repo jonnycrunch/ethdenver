@@ -1355,7 +1355,7 @@ var App = function () {
       var _this4 = this;
 
       return this.account.then(function (account) {
-        var result = _this4.checkAccountPass(password, account);
+        var result = _this4.PasswordManagement.checkAccountPass(password, account);
         result.then(function () {
           _this4.ksResolve(new KeySplit({ account: account, password: password }));
         });
