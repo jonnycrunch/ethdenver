@@ -91,7 +91,7 @@ export class App {
   }
   signIn(password) {
     return this.account.then((account) => {
-      var result = this.checkAccountPass(password, account);
+      var result = this.PasswordManagement.checkAccountPass(password, account);
       result.then(() => {
         this.ksResolve(new KeySplit({account: account, password: password}));
       });
