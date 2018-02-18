@@ -3,8 +3,8 @@ pragma solidity ^0.4.18;
 contract ShardStore {
 
     event StorageConfirmed(
-        address trustedContact;
-        uint shardId;
+        address trustedContact,
+        uint shardId
         );
 
     function confirmStorage(uint shardId) public {
