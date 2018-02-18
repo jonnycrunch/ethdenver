@@ -105,7 +105,7 @@ function mainMenu(session) {
   session.reply(SOFA.Message({
     body: "What would you like to do?",
     controls: [
-      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
+      {type: 'button', label: 'Go to my dashboard', action: 'Webview::http://keysplit-dapp.herokuapp.com/'},
       {type: 'button', label: 'How does KeySplit work?', value: 'about'},
       {type: 'button', label: 'Tell me about key security', value: 'security'},
       {type: 'button', label: 'Donate', value: 'donate'}
@@ -134,16 +134,6 @@ function donate(session) {
 
   mainMenu(session)
 }
-
-/* SAMPLE APP STUFF I DON'T THINK WE NEED
-
-example of how to store state on each user
-function count(session) {
-  let count = (session.get('count') || 0) + 1
-  session.set('count', count)
-  sendMessage(session, `${count}`)
-}
-*/
 
 // HELPERS
 
