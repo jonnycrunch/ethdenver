@@ -1,0 +1,133 @@
+{
+  "contractName": "ShardStore",
+  "abi": [],
+  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a723058204062ec3c2a19c5f845e64b040397fc7cdb43dc696ad8e019f034d19aada7f8750029",
+  "deployedBytecode": "0x6060604052600080fd00a165627a7a723058204062ec3c2a19c5f845e64b040397fc7cdb43dc696ad8e019f034d19aada7f8750029",
+  "sourceMap": "26:112:1:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "26:112:1:-;;;;;",
+  "source": "pragma solidity ^0.4.18;\n\ncontract ShardStore {\n    struct ShardHash {\n        uint shardId;\n        address trustedContact;\n    }\n\n    \n}\n",
+  "sourcePath": "/Users/nickneuman/ethdenver/ETHDenver/keysplit-dapp/solidity/contracts/shardstore.sol",
+  "ast": {
+    "attributes": {
+      "absolutePath": "/Users/nickneuman/ethdenver/ETHDenver/keysplit-dapp/solidity/contracts/shardstore.sol",
+      "exportedSymbols": {
+        "ShardStore": [
+          64
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.4",
+            ".18"
+          ]
+        },
+        "id": 58,
+        "name": "PragmaDirective",
+        "src": "0:24:1"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            64
+          ],
+          "name": "ShardStore",
+          "scope": 65
+        },
+        "children": [
+          {
+            "attributes": {
+              "canonicalName": "ShardStore.ShardHash",
+              "name": "ShardHash",
+              "scope": 64,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "constant": false,
+                  "name": "shardId",
+                  "scope": 63,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "uint256",
+                  "value": null,
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "uint",
+                      "type": "uint256"
+                    },
+                    "id": 59,
+                    "name": "ElementaryTypeName",
+                    "src": "79:4:1"
+                  }
+                ],
+                "id": 60,
+                "name": "VariableDeclaration",
+                "src": "79:12:1"
+              },
+              {
+                "attributes": {
+                  "constant": false,
+                  "name": "trustedContact",
+                  "scope": 63,
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "type": "address",
+                  "value": null,
+                  "visibility": "internal"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "name": "address",
+                      "type": "address"
+                    },
+                    "id": 61,
+                    "name": "ElementaryTypeName",
+                    "src": "101:7:1"
+                  }
+                ],
+                "id": 62,
+                "name": "VariableDeclaration",
+                "src": "101:22:1"
+              }
+            ],
+            "id": 63,
+            "name": "StructDefinition",
+            "src": "52:78:1"
+          }
+        ],
+        "id": 64,
+        "name": "ContractDefinition",
+        "src": "26:112:1"
+      }
+    ],
+    "id": 65,
+    "name": "SourceUnit",
+    "src": "0:139:1"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.18+commit.9cf6e910.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "1.0.1",
+  "updatedAt": "2018-02-18T00:58:28.959Z"
+}

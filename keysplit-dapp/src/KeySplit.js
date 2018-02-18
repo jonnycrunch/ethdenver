@@ -1,5 +1,9 @@
 import secrets from 'secrets.js-next';
 import bip39 from 'bip39';
+import {entropyToMnemonic} from './wordEncode.js';
+import {mnemonicToEntropy} from './wordEncode.js';
+import crypto from 'crypto';
+import rp from 'request-promise-native';
 
 function repeat(char, number) {
   var string = "";
@@ -9,18 +13,67 @@ function repeat(char, number) {
   return string;
 }
 
+class ApiEndpoint {
+  constructor(apiServer) {
+    this.apiServer = apiServer
+  }
+  upload(body) {
+    return rp({
+      method: 'POST',
+      uri: apiServer,
+      body: body,
+      json: true
+    })
+  }
+}
+
 var KeySplit = {
-  mnemonicToSSS(mnemonic, shareCount, threshold) {
+  mnemonicToSSS(mnemonic, shareCount, threshold, password) {
     var key = bip39.mnemonicToEntropy(mnemonic);
-    var shares = secrets.share(key, shareCount, threshold);
-    console.log(shares);
+    var salt = crypto.randomBytes(8);
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var c = crypto.createCipher("aes128", pbkdf2Pass);
+    var encKey = c.update(key, 'hex', 'hex');
+    encKey += c.final('hex')
+    var splitVal = salt.toString("hex") + encKey;
+    var shares = secrets.share(splitVal, shareCount, threshold);
     var mnemonicShares = [];
     for(var share of shares) {
-      share += repeat("0", 8 - (share.length % 8));
-      console.log(share);
-      mnemonicShares.push(bip39.entropyToMnemonic(share));
+      mnemonicShares.push(entropyToMnemonic(share + "000"));
     }
     return mnemonicShares
+  },
+  combineSSS(mnemonicShares, password) {
+    var shares = [];
+    for(var share of mnemonicShares) {
+      var shareHex = mnemonicToEntropy(share);
+      shares.push(shareHex.slice(0, shareHex.length - 3));
+    }
+    var splitVal = secrets.combine(shares);
+    var salt = new Buffer(splitVal.slice(0, 16), "hex");
+    var encKey = splitVal.slice(16);
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var d = crypto.createDecipher("aes128", pbkdf2Pass);
+    var rawKey = d.update(encKey, "hex", "hex");
+    rawKey += d.final("hex");
+    return bip39.entropyToMnemonic(rawKey);
+  },
+  uploadShard(shard, uploader) {
+    uploader = uploader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    var hash = crypto.createHash('sha256');
+    var shardHex = mnemonicToEntropy(shard);
+    hash.update(shardHex, "hex")
+    var result = {
+      shardid: hash.digest(),
+      key: crypto.randomBytes(32),
+    }
+    var c = crypto.createCipher("aes256", result.key);
+    var encShard = c.update(shardHex, "hex", "base64");
+    encShard += c.final("base64");
+    return uploader.upload({shardid: result.shardid, data: encShard}).then((response) => {
+      result.objectid = response;
+      return result
+    });
   }
 };
 
