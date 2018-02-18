@@ -1256,6 +1256,9 @@ var _createClass$2 = function () { function defineProperties(target, props) { fo
 function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var App = function () {
+  /*
+   * Construct with {}
+   */
   function App() {
     var _this = this;
 
@@ -1311,7 +1314,7 @@ var App = function () {
       this.engine.start();
     }
     this.PasswordManagement = new PasswordManagement(this.localStorage);
-    this.ContractInterface = new KeySplitContractInterface({ web3: this.web3 });
+    this.ContractInterface = new KeySplitContractInterface({ web3: this.web3, at: options.at });
     this.KeySplitPromise = new Promise(function (resolve, reject) {
       _this.ksResolve = resolve;
       _this.ksReject = reject;

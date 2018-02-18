@@ -13,6 +13,9 @@ import Wallet from "ethereumjs-wallet";
 
 
 export class App {
+  /*
+   * Construct with {}
+   */
   constructor(options={}) {
     var rpcURL = options.rpcURL || "https://ropsten.infura.io/atjfYkLXBNdLI0zSm9eE"
     if(typeof window === 'undefined') {
@@ -62,7 +65,7 @@ export class App {
       this.engine.start()
     }
     this.PasswordManagement = new PasswordManagement(this.localStorage);
-    this.ContractInterface = new KeySplitContractInterface({web3: this.web3});
+    this.ContractInterface = new KeySplitContractInterface({web3: this.web3, at: options.at});
     this.KeySplitPromise = new Promise((resolve, reject) => {
       this.ksResolve = resolve;
       this.ksReject = reject;
