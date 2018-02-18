@@ -144,11 +144,18 @@ var ApiEndpoint = function () {
 var passwordStore = {};
 
 var KeySplit = function () {
-  function KeySplit(password, apiUrl) {
+  function KeySplit() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
     _classCallCheck(this, KeySplit);
 
-    this.apiUrl = apiUrl || "https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit";
-    passwordStore[this] = password;
+    if (typeof window === "undefined") {
+      var window = {};
+    }
+    this.apiUrl = options.apiUrl || "https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit";
+    this.localStorage = options.localStorage || window.localStorage;
+    this.account = options.account;
+    passwordStore[this] = options.password;
   }
 
   _createClass(KeySplit, [{
@@ -257,6 +264,13 @@ var KeySplit = function () {
       var c = crypto.createCipher("aes256", result.key);
       var encShard = c.update(shardHex, "hex", "base64");
       encShard += c.final("base64");
+      if (this.localStorage) {
+        var shardList = JSON.parse(this.localStorage.getItem(this.account + ':shards'));
+        if (shardList.indexOf(result.shardid.toString("hex")) < 0) {
+          shardList.push(result.shardid.toString("hex"));
+        }
+        this.localStorage.setItem(this.account + ':shards', JSON.stringify(shardList));
+      }
       return uploader.upload({ shardid: result.shardid, data: encShard }).then(function (response) {
         result.objectid = response;
         return result;
@@ -286,12 +300,52 @@ var KeySplit = function () {
   }, {
     key: 'saveShard',
     value: function saveShard(shard, password) {
-      password = password || passwordStore[this];
-      var salt = crypto.randomBytes(8);
-      var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 16, 'sha512');
-      var c = crypto.createCipher("aes128", pbkdf2Pass);
-      var encKey = c.update(key, 'hex', 'hex');
-      encKey += c.final('hex');
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        password = password || passwordStore[_this];
+        var salt = crypto.randomBytes(8);
+        crypto.pbkdf2Sync(password, salt, 100000, 16, 'sha512', function (err, pbkdf2Pass) {
+          if (err) {
+            reject(err);return;
+          }
+          var c = crypto.createCipher("aes128", pbkdf2Pass);
+          var shardHex = mnemonicToEntropy(shard);
+          var encShard = c.update(shardHex, 'hex', 'hex');
+          encShard += c.final('hex');
+          var splitVal = salt.toString("hex") + encShard;
+          var hash = crypto.createHash('sha256');
+          hash.update(shardHex, "hex");
+          var shardId = hash.digest("hex");
+          _this.localStorage.setItem('encShard:' + shardId, splitVal);
+          var shardList = JSON.parse(_this.localStorage.getItem(_this.account + ':heldShards'));
+          if (shardList.indexOf(shardId) < 0) {
+            shardList.push(shardId);
+          }
+          _this.localStorage.setItem(_this.account + ':heldShards', JSON.stringify(shardList));
+          resolve(shardId);
+        });
+      });
+    }
+  }, {
+    key: 'getShard',
+    value: function getShard(shardId, password) {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        var splitVal = _this2.localStorage.getItem('encShard:' + shardId);
+        var salt = new Buffer(splitVal.slice(0, 16), "hex");
+        var encShard = splitVal.slice(16);
+        crypto.pbkdf2Sync(password, salt, 100000, 16, 'sha512', function (err, pbkdf2Pass) {
+          if (err) {
+            reject(err);
+          }
+          var d = crypto.createDecipher("aes128", pbkdf2Pass);
+          var rawShard = d.update(encShard, "hex", "hex");
+          rawShard += d.final("hex");
+          resolve(bip39.entropyToMnemonic(rawShard));
+        });
+      });
     }
   }]);
 
