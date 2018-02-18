@@ -1,18 +1,50 @@
 {
   "contractName": "ShardStore",
-  "abi": [],
-  "bytecode": "0x60606040523415600e57600080fd5b603580601b6000396000f3006060604052600080fd00a165627a7a723058204062ec3c2a19c5f845e64b040397fc7cdb43dc696ad8e019f034d19aada7f8750029",
-  "deployedBytecode": "0x6060604052600080fd00a165627a7a723058204062ec3c2a19c5f845e64b040397fc7cdb43dc696ad8e019f034d19aada7f8750029",
-  "sourceMap": "26:112:1:-;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "26:112:1:-;;;;;",
-  "source": "pragma solidity ^0.4.18;\n\ncontract ShardStore {\n    struct ShardHash {\n        uint shardId;\n        address trustedContact;\n    }\n\n    \n}\n",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "shardId",
+          "type": "uint256"
+        }
+      ],
+      "name": "confirmStorage",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "trustedContact",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "shardId",
+          "type": "uint256"
+        }
+      ],
+      "name": "StorageConfirmed",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x60606040523415600e57600080fd5b60f78061001c6000396000f300606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806341ff29fc146044575b600080fd5b3415604e57600080fd5b606260048080359060200190919050506064565b005b807f038265b6201154bc86ad21e0d59b47de41d924dfa563cc5ee1faaefc047ad8ad33604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390a2505600a165627a7a723058208e9adfba35944fe49f106bd266886753c656408f7453696ef35020fcd5b0992a0029",
+  "deployedBytecode": "0x606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806341ff29fc146044575b600080fd5b3415604e57600080fd5b606260048080359060200190919050506064565b005b807f038265b6201154bc86ad21e0d59b47de41d924dfa563cc5ee1faaefc047ad8ad33604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390a2505600a165627a7a723058208e9adfba35944fe49f106bd266886753c656408f7453696ef35020fcd5b0992a0029",
+  "sourceMap": "26:1128:0:-;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "26:1128:0:-;;;;;;;;;;;;;;;;;;;;;;;;150:99;;;;;;;;;;;;;;;;;;;;;;;;;;;234:7;205:37;222:10;205:37;;;;;;;;;;;;;;;;;;;;;;150:99;:::o",
+  "source": "pragma solidity ^0.4.18;\n\ncontract ShardStore {\n\n    event StorageConfirmed(\n        address trustedContact,\n        uint indexed shardId\n    );\n\n    function confirmStorage(uint shardId) public {\n        StorageConfirmed(msg.sender, shardId);\n    }\n\n    /* FUTURE WORK FOR EVALUATION\n    - Do we want to create a mapping of addresses that are allowed\n    to call confirmStorage? Right now a small attack vector exists\n    where a malicious actor could confirm storage of a particular\n    shardId even though the true user is not confirming that and may\n    no longer have the ID.\n    */\n    /*\n    - I think a better approach is for the client side to track which address\n    has previously confirmed an address and alert the user if a new address\n    claims the address. On the client side, the user can elect to trust or\n    distrust new adresses that are trying to confirm their shard ids - similar\n    to how the Signal messenger alerts users when their contacts safety numbers\n    change.\n\n    That said, I think being able to trust multiple addresses to confirm a\n    shard needs to be out of scope for the next 11 hours of the hackathon.\n    */\n}\n",
   "sourcePath": "/Users/nickneuman/ethdenver/ETHDenver/keysplit-dapp/solidity/contracts/shardstore.sol",
   "ast": {
     "attributes": {
       "absolutePath": "/Users/nickneuman/ethdenver/ETHDenver/keysplit-dapp/solidity/contracts/shardstore.sol",
       "exportedSymbols": {
         "ShardStore": [
-          64
+          20
         ]
       }
     },
@@ -26,9 +58,9 @@
             ".18"
           ]
         },
-        "id": 58,
+        "id": 1,
         "name": "PragmaDirective",
-        "src": "0:24:1"
+        "src": "0:24:0"
       },
       {
         "attributes": {
@@ -42,18 +74,19 @@
           "documentation": null,
           "fullyImplemented": true,
           "linearizedBaseContracts": [
-            64
+            20
           ],
           "name": "ShardStore",
-          "scope": 65
+          "scope": 21
         },
         "children": [
           {
             "attributes": {
               "canonicalName": "ShardStore.ShardHash",
-              "name": "ShardHash",
+              "name": "StorageConfirmed",
               "scope": 64,
-              "visibility": "public"
+              "visibility": "public",
+              "anonymous": false
             },
             "children": [
               {
@@ -70,17 +103,62 @@
                 "children": [
                   {
                     "attributes": {
-                      "name": "uint",
-                      "type": "uint256"
+                      "name": "trustedContact",
+                      "type": "address",
+                      "constant": false,
+                      "indexed": false,
+                      "scope": 7,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "value": null,
+                      "visibility": "internal"
                     },
-                    "id": 59,
-                    "name": "ElementaryTypeName",
-                    "src": "79:4:1"
+                    "id": 3,
+                    "name": "VariableDeclaration",
+                    "src": "85:22:0",
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "type": "address"
+                        },
+                        "id": 2,
+                        "name": "ElementaryTypeName",
+                        "src": "85:7:0"
+                      }
+                    ]
+                  },
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "indexed": true,
+                      "name": "shardId",
+                      "scope": 7,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 4,
+                        "name": "ElementaryTypeName",
+                        "src": "117:4:0"
+                      }
+                    ],
+                    "id": 5,
+                    "name": "VariableDeclaration",
+                    "src": "117:20:0"
                   }
                 ],
-                "id": 60,
-                "name": "VariableDeclaration",
-                "src": "79:12:1"
+                "id": 6,
+                "name": "ParameterList",
+                "src": "75:68:0"
               },
               {
                 "attributes": {
@@ -109,19 +187,186 @@
                 "src": "101:22:1"
               }
             ],
-            "id": 63,
-            "name": "StructDefinition",
-            "src": "52:78:1"
+            "id": 7,
+            "name": "EventDefinition",
+            "src": "53:91:0"
+          },
+          {
+            "attributes": {
+              "constant": false,
+              "implemented": true,
+              "isConstructor": false,
+              "modifiers": [
+                null
+              ],
+              "name": "confirmStorage",
+              "payable": false,
+              "scope": 20,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "shardId",
+                      "scope": 19,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 8,
+                        "name": "ElementaryTypeName",
+                        "src": "174:4:0"
+                      }
+                    ],
+                    "id": 9,
+                    "name": "VariableDeclaration",
+                    "src": "174:12:0"
+                  }
+                ],
+                "id": 10,
+                "name": "ParameterList",
+                "src": "173:14:0"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 11,
+                "name": "ParameterList",
+                "src": "195:0:0"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "isStructConstructorCall": false,
+                          "lValueRequested": false,
+                          "names": [
+                            null
+                          ],
+                          "type": "tuple()",
+                          "type_conversion": false
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                },
+                                {
+                                  "typeIdentifier": "t_uint256",
+                                  "typeString": "uint256"
+                                }
+                              ],
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 7,
+                              "type": "function (address,uint256)",
+                              "value": "StorageConfirmed"
+                            },
+                            "id": 12,
+                            "name": "Identifier",
+                            "src": "205:16:0"
+                          },
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "member_name": "sender",
+                              "referencedDeclaration": null,
+                              "type": "address"
+                            },
+                            "children": [
+                              {
+                                "attributes": {
+                                  "argumentTypes": null,
+                                  "overloadedDeclarations": [
+                                    null
+                                  ],
+                                  "referencedDeclaration": 32,
+                                  "type": "msg",
+                                  "value": "msg"
+                                },
+                                "id": 13,
+                                "name": "Identifier",
+                                "src": "222:3:0"
+                              }
+                            ],
+                            "id": 14,
+                            "name": "MemberAccess",
+                            "src": "222:10:0"
+                          },
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 9,
+                              "type": "uint256",
+                              "value": "shardId"
+                            },
+                            "id": 15,
+                            "name": "Identifier",
+                            "src": "234:7:0"
+                          }
+                        ],
+                        "id": 16,
+                        "name": "FunctionCall",
+                        "src": "205:37:0"
+                      }
+                    ],
+                    "id": 17,
+                    "name": "ExpressionStatement",
+                    "src": "205:37:0"
+                  }
+                ],
+                "id": 18,
+                "name": "Block",
+                "src": "195:54:0"
+              }
+            ],
+            "id": 19,
+            "name": "FunctionDefinition",
+            "src": "150:99:0"
           }
         ],
-        "id": 64,
+        "id": 20,
         "name": "ContractDefinition",
-        "src": "26:112:1"
+        "src": "26:1128:0"
       }
     ],
-    "id": 65,
+    "id": 21,
     "name": "SourceUnit",
-    "src": "0:139:1"
+    "src": "0:1155:0"
   },
   "compiler": {
     "name": "solc",
@@ -129,5 +374,5 @@
   },
   "networks": {},
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-02-18T00:58:28.959Z"
+  "updatedAt": "2018-02-18T04:04:16.792Z"
 }
