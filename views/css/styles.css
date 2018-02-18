@@ -78,6 +78,12 @@ a:hover {
   height: 15%;
 }
 
+.spacer100 {
+  margin: 0;
+  padding: 0;
+  height: 100px;
+}
+
 /* main elements */
 
 .mainh {
@@ -175,7 +181,7 @@ a:hover {
   line-height: 1.5em;
   margin:  1em auto 1em;
   width: 90%;
-  height: 40%;
+  height: 80%;
   text-rendering:optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
