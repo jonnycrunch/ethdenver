@@ -1241,7 +1241,11 @@ var PasswordManagement = function () {
     key: 'checkAccountPass',
     value: function checkAccountPass(password, account) {
       var pdata = JSON.parse(this.localStorage.getItem(account + ':password'));
-      return this.checkPass(password, pdata.hash, pdata.salt);
+      if (pdata) {
+        return this.checkPass(password, pdata.hash, pdata.salt);
+      } else {
+        return Promise.resolve(false);
+      }
     }
   }, {
     key: 'hasAccountPass',
@@ -1281,6 +1285,9 @@ var App = function () {
       var privateKey = options.privateKey || localStorage.getItem("localPrivateKey");
       if (!privateKey) {
         privateKey = Wallet.generate().getPrivateKeyString().slice(2);
+        if (localStorage) {
+          localStorage.setItem("localPrivateKey", privateKey);
+        }
       }
       var wallet = Wallet.fromPrivateKey(new Buffer(privateKey, "hex"));
       this.engine = new ProviderEngine();

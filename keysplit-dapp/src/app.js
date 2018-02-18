@@ -30,6 +30,8 @@ export class App {
       var privateKey = options.privateKey || localStorage.getItem("localPrivateKey");
       if(!privateKey) {
         privateKey = Wallet.generate().getPrivateKeyString().slice(2);
+        if(localStorage) {
+        localStorage.setItem("localPrivateKey", privateKey)}
       }
       var wallet = Wallet.fromPrivateKey(new Buffer(privateKey, "hex"));
       this.engine = new ProviderEngine();

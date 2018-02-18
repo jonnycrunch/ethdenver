@@ -17,7 +17,7 @@
 	        <div class="container topnav">
 	            <!-- Grouped nav for better mobile display -->
 	            <div class="navbar-header">
-	            	<a class="navbar-brand" href="index.html">	                	
+	            	<a class="navbar-brand" href="index.html">
 	            		<img class="logo" src="img/icLogoSmall.png">
 					</a>
 	                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#ks-navbar-collapse-1">
@@ -71,11 +71,17 @@
 			    	alert("Your password should be at least twelve (12) characters long.");
 			    	return false;
 			    } else {
-			    	app = new KeySplit.App({at:"0x95c9649FacB9eF51A6A64390E55Bfa6d624995AF"})
+			    	app = new KeySplit.App({at:"0x95c9649FacB9eF51A6A64390E55Bfa6d624995AF", localStorage: window.localStorage})
 			    	app.hasAccount().then(function(result) {
-					  console.log(result);
-					}, function(err) {
-					  console.log(err);
+							if(result) {
+								app.signIn(x).then(function() {
+									console.log("Signed in");
+								});
+							} else {
+								app.signUp(x).then(function() {
+									console.log("Signed up");
+								});
+							}
 					});
 			    }
 			}
