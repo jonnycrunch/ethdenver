@@ -34,8 +34,15 @@ class ApiEndpoint {
   }
 }
 
-var KeySplit = {
+var passwordStore = {};
+
+class KeySplit {
+  constructor(password, apiUrl) {
+    this.apiUrl = apiUrl || "https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit";
+    passwordStore[this] = password;
+  }
   mnemonicToSSS(mnemonic, shareCount, threshold, password) {
+    password = password || passwordStore[this];
     var key = bip39.mnemonicToEntropy(mnemonic);
     var salt = crypto.randomBytes(8);
     var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
@@ -49,8 +56,9 @@ var KeySplit = {
       mnemonicShares.push(entropyToMnemonic(share + "000"));
     }
     return mnemonicShares
-  },
+  }
   combineSSS(mnemonicShares, password) {
+    password = password || passwordStore[this];
     var shares = [];
     for(var share of mnemonicShares) {
       var shareHex = mnemonicToEntropy(share);
@@ -64,9 +72,9 @@ var KeySplit = {
     var rawKey = d.update(encKey, "hex", "hex");
     rawKey += d.final("hex");
     return bip39.entropyToMnemonic(rawKey);
-  },
+  }
   uploadShard(shard, uploader) {
-    uploader = uploader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    uploader = uploader || new ApiEndpoint(this.apiUrl);
     var hash = crypto.createHash('sha256');
     var shardHex = mnemonicToEntropy(shard);
     hash.update(shardHex, "hex")
@@ -81,9 +89,9 @@ var KeySplit = {
       result.objectid = response;
       return result
     });
-  },
+  }
   downloadShard(pathAndKey, downloader) {
-    downloader = downloader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    downloader = downloader || new ApiEndpoint(this.apiUrl);
     var objectid, key;
     [objectid, key] = pathAndKey.split(":");
     return downloader.download(objectid).then((response) => {
@@ -93,6 +101,10 @@ var KeySplit = {
       shardHex += d.final("hex");
       return entropyToMnemonic(shardHex);
     })
+  }
+  saveShard(shard, password) {
+    password = password || passwordStore[this];
+
   }
 };
 
