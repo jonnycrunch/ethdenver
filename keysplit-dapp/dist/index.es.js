@@ -1449,6 +1449,11 @@ var App = function () {
       return getHeldShards();
     }
   }, {
+    key: 'getShardMnemonic',
+    value: function getShardMnemonic(shardId) {
+      return this.KeySplitContractInterface.getShard(shardId);
+    }
+  }, {
     key: 'currentBlock',
     value: function currentBlock() {
       var _this6 = this;
