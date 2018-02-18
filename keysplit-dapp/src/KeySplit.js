@@ -3,6 +3,7 @@ import bip39 from 'bip39';
 import {entropyToMnemonic} from './wordEncode.js';
 import {mnemonicToEntropy} from './wordEncode.js';
 import crypto from 'crypto';
+import rp from 'request-promise-native';
 
 function repeat(char, number) {
   var string = "";
@@ -10,6 +11,20 @@ function repeat(char, number) {
     string += char;
   }
   return string;
+}
+
+class ApiEndpoint {
+  constructor(apiServer) {
+    this.apiServer = apiServer
+  }
+  upload(body) {
+    return rp({
+      method: 'POST',
+      uri: apiServer,
+      body: body,
+      json: true
+    })
+  }
 }
 
 var KeySplit = {
@@ -42,6 +57,23 @@ var KeySplit = {
     var rawKey = d.update(encKey, "hex", "hex");
     rawKey += d.final("hex");
     return bip39.entropyToMnemonic(rawKey);
+  },
+  uploadShard(shard, uploader) {
+    uploader = uploader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    var hash = crypto.createHash('sha256');
+    var shardHex = mnemonicToEntropy(shard);
+    hash.update(shardHex, "hex")
+    var result = {
+      shardid: hash.digest(),
+      key: crypto.randomBytes(32),
+    }
+    var c = crypto.createCipher("aes256", result.key);
+    var encShard = c.update(shardHex, "hex", "base64");
+    encShard += c.final("base64");
+    return uploader.upload({shardid: result.shardid, data: encShard}).then((response) => {
+      result.objectid = response;
+      return result
+    });
   }
 };
 

@@ -1,8 +1,30 @@
 import chai from 'chai';
 import KeySplit from '../src/KeySplit.js';
 import bip39 from 'bip39';
+import uuidv4 from 'uuid/v4';
 
 const expect = chai.expect;
+
+class MockApiEndpoint {
+  constructor () {
+    this.items = {};
+  }
+  upload(data) {
+    return new Promise((resolve, reject) => {
+      var id = uuidv4();
+      this.items[id] = data;
+      resolve(id);
+    })
+  }
+  download(id) {
+    return new Promise((resolve, reject) => {
+      if(!this.items[id]) {
+        reject("not found");
+      }
+      resolve(this.items[id]);
+    });
+  }
+}
 
 describe('KeySplit', () => {
   describe('KeySplit.mnemonicToSSS', () => {
@@ -52,5 +74,18 @@ describe('KeySplit', () => {
         }
       }
     }).timeout(20000);
+  });
+  describe('KeySplit.uploadShard', () => {
+    it('should upload a shard', () => {
+      var mnemonic = bip39.generateMnemonic();
+      var shares = KeySplit.mnemonicToSSS(mnemonic, 3, 2, "foo");
+      var mockEndpoint = new MockApiEndpoint();
+      return KeySplit.uploadShard(shares[0], mockEndpoint).then((result) => {
+        expect(result.key).to.have.lengthOf(32);
+        expect(result.shardid).to.have.lengthOf(32);
+        expect(mockEndpoint.items[result.objectid]).to.not.have.keys("key");
+        expect(mockEndpoint.items[result.objectid]).to.have.all.keys("data", "shardid");
+      })
+    })
   });
 });
