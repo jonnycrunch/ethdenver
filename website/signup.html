@@ -59,6 +59,8 @@
         <!-- Scripts -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    	<script src="../keysplit-dapp/dist/index.browser.js"></script>
+
 		<script type="text/javascript">
 			function validatePwd() {
 				var x = document.getElementById("pwd").value;
@@ -69,8 +71,12 @@
 			    	alert("Your password should be at least twelve (12) characters long.");
 			    	return false;
 			    } else {
-			    	// check for valid pwd
-
+			    	app = new KeySplit.App({at:"0x95c9649FacB9eF51A6A64390E55Bfa6d624995AF"})
+			    	app.hasAccount().then(function(result) {
+					  console.log(result);
+					}, function(err) {
+					  console.log(err);
+					});
 			    }
 			}
 		</script>
