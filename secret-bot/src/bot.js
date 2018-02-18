@@ -160,8 +160,9 @@ function donate(session) {
 
 function sendMessage(session, message) {
   let controls = [
-    {type: 'button', label: 'Ping', value: 'ping'},
-    {type: 'button', label: 'Count', value: 'count'},
+    // {type: 'button', label: 'Ping', value: 'ping'},
+    // {type: 'button', label: 'Count', value: 'count'},
+    {type: 'button', label: 'Get Started', action: 'Webview::https://google.com'},
     {type: 'button', label: 'Donate', value: 'donate'}
   ]
   session.reply(SOFA.Message({
