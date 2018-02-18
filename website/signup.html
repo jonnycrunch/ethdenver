@@ -51,6 +51,27 @@
 	    	</div>
 	    	<button class="mainBtn" onclick="validatePwd()">SIGN IN</button>
 	    </div>
+			<div class="dashboard hide">
+					<h1 class="secondtitle">Your Dashboard</h1>
+		    	<br>
+				<ul class="nav nav-tabs" id="tab" role="tablist">
+				  <li class="nav-item">
+				    <a class="nav-link active" id="key-tab" data-toggle="tab" href="#key" role="tab" aria-controls="key" aria-selected="true">Keys</a>
+				  </li>
+				  <li class="nav-item">
+				    <a class="nav-link" id="shard-tab" data-toggle="tab" href="#shard" role="tab" aria-controls="shard" aria-selected="false">Shards</a>
+				  </li>
+				</ul>
+				<br><br>
+				<div class="tab-content" id="tabContent">
+				  <div class="tab-pane fade show active" id="key" role="tabpanel" aria-labelledby="key-tab">
+				  	<div id="keyContent"></div>
+				  </div>
+				  <div class="tab-pane fade" id="shard" role="tabpanel" aria-labelledby="shard-tab">
+				  	<div id="shardContent"></div>
+				  </div>
+				</div>
+			</div>
 	    <div class="footer">
 	    	<p>Made with love by Team KeySplit</p>
 	    	<p>ETHDenver 2018</p>
@@ -60,8 +81,14 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     	<script src="../keysplit-dapp/dist/index.browser.js"></script>
+    	<script src="./js/inject.js"></script>
 
 		<script type="text/javascript">
+			function loadDashboard() {
+				$(".main").hide();
+				$(".dashboard").removeClass("hide");
+
+			}
 			function validatePwd() {
 				var x = document.getElementById("pwd").value;
 			    if (x == "") {
@@ -74,12 +101,20 @@
 			    	app = new KeySplit.App({at:"0x95c9649FacB9eF51A6A64390E55Bfa6d624995AF", localStorage: window.localStorage})
 			    	app.hasAccount().then(function(result) {
 							if(result) {
-								app.signIn(x).then(function() {
-									console.log("Signed in");
+								app.signIn(x).then(function(val) {
+									if(val) {
+										console.log("Signed in");
+										loadDashboard();
+									} else {
+										alert("bad password");
+									}
 								});
 							} else {
 								app.signUp(x).then(function() {
-									console.log("Signed up");
+									if(val) {
+										console.log("Signed up");
+										loadDashboard();
+									}
 								});
 							}
 					});

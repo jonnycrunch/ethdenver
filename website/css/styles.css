@@ -4,8 +4,8 @@
   font-family: "SF Text";
 }
 
-html, body { 
-  height: 100%; 
+html, body {
+  height: 100%;
   background-color: #fff;
 }
 
@@ -48,8 +48,8 @@ p, li {
   color: #544949;
 }
 
-a:hover { 
-  color: #000; 
+a:hover {
+  color: #000;
   text-decoration: none;
 }
 
@@ -135,7 +135,7 @@ a:hover {
 .link {
   font-size: 16px;
   color: rgb(67,198,172);
-  text-decoration: none; 
+  text-decoration: none;
 }
 
 .link:hover {
@@ -168,3 +168,7 @@ input {
   text-align: center;
 }
 
+
+hide {
+  display: none;
+}
