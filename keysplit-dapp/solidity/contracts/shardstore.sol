@@ -7,8 +7,10 @@ contract ShardStore {
         uint indexed shardId
     );
 
-    function confirmStorage(uint shardId) public {
-        StorageConfirmed(msg.sender, shardId);
+    function confirmStorage(uint[] shardId) public {
+        for(uint i = 0; i < shardId.length; i++){
+            StorageConfirmed(msg.sender, shardId[i]);
+        }
     }
 
     /* FUTURE WORK FOR EVALUATION
