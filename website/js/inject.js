@@ -1,3 +1,4 @@
 $(function(){
-	$("#mainContent").load("views/shards.html"); 
+	$("#shardContent").load("views/shards.html"); 
+	$("#keyContent").load("views/keys.html"); 
 });

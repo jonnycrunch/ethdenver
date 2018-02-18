@@ -157,6 +157,11 @@ a:hover {
   text-decoration: none;
 }
 
+#shardContent #keyContent {
+  float: center;
+  text-align: center;
+}
+
 input {
   width: 250px;
   float: none;
