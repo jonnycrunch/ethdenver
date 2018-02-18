@@ -3,7 +3,7 @@ import {PasswordManagement} from "../src/hashPass.js"
 
 const expect = chai.expect;
 
-class MockLocalStorage {
+export class MockLocalStorage {
   constructor() {
     this.storage = {}
   }

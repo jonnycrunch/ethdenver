@@ -2,6 +2,7 @@ import chai from 'chai';
 import KeySplit from '../src/KeySplit.js';
 import bip39 from 'bip39';
 import uuidv4 from 'uuid/v4';
+import {MockLocalStorage} from './hashPassSpec.js';
 
 const expect = chai.expect;
 
@@ -122,6 +123,20 @@ describe('KeySplit', () => {
           var pathAndKey = `${result.objectid}:${result.key.toString("base64")}`;
           return ks.downloadShard(pathAndKey, mockEndpoint).then((shard) => {
             expect(shard).to.equal(shares[0]);
+          })
+        })
+      });
+    })
+  });
+  describe('KeySplit.saveShard', () => {
+    it('should save a shard', () => {
+      var mnemonic = bip39.generateMnemonic();
+      var ks = new KeySplit({localStorage: new MockLocalStorage()});
+      ks.mnemonicToSSS(mnemonic, 3, 2, "foo").then((shares) => {
+        var mockEndpoint = new MockApiEndpoint();
+        return ks.saveShard(shares[0], "foo").then((shardId) => {
+          return ks.getShard(shardId, "foo").then((shard) => {
+            expect(shard).to.be.equal(shares[0]);
           })
         })
       });

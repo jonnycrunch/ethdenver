@@ -29,6 +29,7 @@ promise = promise.then(() => del(['dist/*']));
       babelrc: false,
       exclude: 'node_modules/**',
       runtimeHelpers: true,
+      plugins: [["inline-json-import", {}]],
       presets: pkg.babel.presets.map(x => (x === 'latest' ? ['latest', { es2015: { modules: false } }] : x)),
     }))],
   }).then(bundle => bundle.write({

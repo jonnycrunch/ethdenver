@@ -30,4 +30,7 @@ export class PasswordManagement {
     var pdata = JSON.parse(this.localStorage.getItem(`${account}:password`));
     return this.checkPass(password, pdata.hash, pdata.salt);
   }
+  hasAccountPass(account) {
+    return !!this.localStorage.getItem(`${account}:password`);
+  }
 }
