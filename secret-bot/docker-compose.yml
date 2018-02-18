@@ -6,14 +6,14 @@ services:
       - redis
       - postgres
     environment: &environment
-      - TOKEN_APP_SEED=ability unit also sauce actual race nothing penalty flush raise shine error
-      - TOKEN_APP_USERNAME=SecretBot
-      - TOKEN_APP_NAME=Secret Bot
+      - TOKEN_APP_SEED=giraffe tank swamp mushroom timber runway coast cargo century hero sing scatter
+      - TOKEN_APP_USERNAME=KeySplit
+      - TOKEN_APP_NAME=KeySplit
       - TOKEN_APP_AVATAR=attachments/avatar.jpg
       ##
-      # Token App Id: 0xfdf1c2c3dfc6b17e517776eb59e4930f759320e9
+      ## Token App Id: 0x4224a45ee3f5f0f7d09a71dc7ceb9de894c57893
 
-      # Token App Payment Address: 0xda2f6d81f6ed4dca56b9564f1a1e6fbb7f42c08d
+      ## Token App Payment Address: 0x7cd51e08529e9a75e96b107f3c27dd329613f0c5
       ##
       - REDIS_URL=redis://h:rlcMWNrxXgqS0xM8aWCYuE0R@redis:6379
       - DATABASE_URL=postgres://token:va5uOdJBqu2dZ1@postgres:5432/token
