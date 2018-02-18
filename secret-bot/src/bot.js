@@ -41,9 +41,11 @@ function onCommand(session, command) {
     case 'security':
       security(session)
       break
-
     case 'mainMenu':
       mainMenu(session)
+      break
+    case 'donate':
+      donate(session)
       break
     }
 }
@@ -75,27 +77,13 @@ function onPayment(session, message) {
 function welcome(session) {
   sendMessage(session, `Welcome to KeySplit! We help you store your private key phrase with people you trust. If you ever lose access to your wallet, they can help you recover it.`)
 
-  session.reply(SOFA.Message({
-    body: "What would you like to do?",
-    controls: [
-      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
-      {type: 'button', label: 'How does KeySplit work?', value: 'about'},
-      {type: 'button', label: 'Tell me about key security', value: 'security'}
-    ]
-  }))
+  mainMenu(session)
 }
 
 function dashboard(session) {
   sendMessage(session, `Unfortunately we can't do this yet. Bye sucka!`)
 
-  session.reply(SOFA.Message({
-    body: "What would you like to do?",
-    controls: [
-      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
-      {type: 'button', label: 'How does KeySplit work?', value: 'about'},
-      {type: 'button', label: 'Tell me about key security', value: 'security'}
-    ]
-  }))
+  mainMenu(session)
 }
 
 function about(session) {
@@ -119,7 +107,8 @@ function mainMenu(session) {
     controls: [
       {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
       {type: 'button', label: 'How does KeySplit work?', value: 'about'},
-      {type: 'button', label: 'Tell me about key security', value: 'security'}
+      {type: 'button', label: 'Tell me about key security', value: 'security'},
+      {type: 'button', label: 'Donate', value: 'donate'}
     ]
   }))
 }
@@ -140,6 +129,12 @@ function security(session) {
 }
 
 
+function donate(session) {
+  sendMessage(session, 'If you would like to donate to support KeySplit development, please use the Pay button at the top of your screen. Thank you so much!')
+
+  mainMenu(session)
+}
+
 /* SAMPLE APP STUFF I DON'T THINK WE NEED
 
 example of how to store state on each user
@@ -148,23 +143,12 @@ function count(session) {
   session.set('count', count)
   sendMessage(session, `${count}`)
 }
-
-function donate(session) {
-  // request $1 USD at current exchange rates
-  Fiat.fetch().then((toEth) => {
-    session.requestEth(toEth.USD(1))
-  })
-}*/
+*/
 
 // HELPERS
 
 function sendMessage(session, message) {
-  let controls = [
-    // {type: 'button', label: 'Ping', value: 'ping'},
-    // {type: 'button', label: 'Count', value: 'count'},
-    {type: 'button', label: 'Get Started', action: 'Webview::https://google.com'},
-    {type: 'button', label: 'Donate', value: 'donate'}
-  ]
+  let controls = []
   session.reply(SOFA.Message({
     body: message,
     controls: controls,
