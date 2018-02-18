@@ -23,7 +23,14 @@ class ApiEndpoint {
       uri: apiServer,
       body: body,
       json: true
-    })
+    });
+  }
+  download(shardid) {
+    return rp({
+      method: 'GET',
+      uri: `${this.apiServer}?id=${shardid}`,
+      json: true
+    });
   }
 }
 
@@ -74,6 +81,18 @@ var KeySplit = {
       result.objectid = response;
       return result
     });
+  },
+  downloadShard(pathAndKey, downloader) {
+    downloader = downloader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    var objectid, key;
+    [objectid, key] = pathAndKey.split(":");
+    return downloader.download(objectid).then((response) => {
+      console.log(objectid, key);
+      var d = crypto.createDecipher("aes256", new Buffer(key, "base64"));
+      var shardHex = d.update(response.data, "base64", "hex");
+      shardHex += d.final("hex");
+      return entropyToMnemonic(shardHex);
+    })
   }
 };
 

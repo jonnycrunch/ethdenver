@@ -88,4 +88,17 @@ describe('KeySplit', () => {
       })
     })
   });
+  describe('KeySplit.downloadShard', () => {
+    it('should upload a shard', () => {
+      var mnemonic = bip39.generateMnemonic();
+      var shares = KeySplit.mnemonicToSSS(mnemonic, 3, 2, "foo");
+      var mockEndpoint = new MockApiEndpoint();
+      return KeySplit.uploadShard(shares[0], mockEndpoint).then((result) => {
+        var pathAndKey = `${result.objectid}:${result.key.toString("base64")}`;
+        return KeySplit.downloadShard(pathAndKey, mockEndpoint).then((shard) => {
+          expect(shard).to.equal(shares[0]);
+        })
+      })
+    })
+  });
 });
