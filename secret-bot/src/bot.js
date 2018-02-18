@@ -32,14 +32,18 @@ function onMessage(session, message) {
 
 function onCommand(session, command) {
   switch (command.content.value) {
-    case 'ping':
-      pong(session)
+    case 'dashboard':
+      dashboard(session)
       break
-    case 'count':
-      count(session)
+    case 'about':
+      about(session)
       break
-    case 'donate':
-      donate(session)
+    case 'security':
+      security(session)
+      break
+
+    case 'mainMenu':
+      mainMenu(session)
       break
     }
 }
@@ -69,14 +73,76 @@ function onPayment(session, message) {
 // STATES
 
 function welcome(session) {
-  sendMessage(session, `Hello Token!`)
+  sendMessage(session, `Welcome to KeySplit! We help you store your private key phrase with people you trust. If you ever lose access to your wallet, they can help you recover it.`)
+
+  session.reply(SOFA.Message({
+    body: "What would you like to do?",
+    controls: [
+      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
+      {type: 'button', label: 'How does KeySplit work?', value: 'about'},
+      {type: 'button', label: 'Tell me about key security', value: 'security'}
+    ]
+  }))
 }
 
-function pong(session) {
-  sendMessage(session, `Pong`)
+function dashboard(session) {
+  sendMessage(session, `Unfortunately we can't do this yet. Bye sucka!`)
+
+  session.reply(SOFA.Message({
+    body: "What would you like to do?",
+    controls: [
+      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
+      {type: 'button', label: 'How does KeySplit work?', value: 'about'},
+      {type: 'button', label: 'Tell me about key security', value: 'security'}
+    ]
+  }))
 }
 
-// example of how to store state on each user
+function about(session) {
+  sendMessage(session, 'KeySplit lets you enter your wallet seed phrase and choose 5 contacts to share it with.')
+
+  sendMessage(session, 'Each contact will receive an encrypted shard of your seed phrase. Their shard alone contains no useful information for them.')
+
+  sendMessage(session, 'However, if you ever happen to lose your seed phrase, you can ask 3 of those 5 friends to send you the shard they are saving for you. Then you can use KeySplit to recreate your phrase and access your wallet!')
+
+  session.reply(SOFA.Message({
+    controls: [
+      {type: 'button', label: 'Whats a seed phrase?', value: 'security'},
+      {type: 'button', label: 'Main menu', value: 'mainMenu'}
+    ]
+  }))
+}
+
+function mainMenu(session) {
+  session.reply(SOFA.Message({
+    body: "What would you like to do?",
+    controls: [
+      {type: 'button', label: 'Go to my KeySplit dashboard', value: 'dashboard'},
+      {type: 'button', label: 'How does KeySplit work?', value: 'about'},
+      {type: 'button', label: 'Tell me about key security', value: 'security'}
+    ]
+  }))
+}
+
+function security(session) {
+  sendMessage(session, 'Your seed phrase/private keys are like your password to your online bank account. With cryptocurrency, you are your own bank. This is really cool! But with great power comes great responsibility...')
+
+  sendMessage(session, 'If someone else gets your private keys, they can steal all of your cryptocurrency. If you lose your private key or seed phrase without having a backup, you cant ever access your funds.')
+
+  sendMessage(session, 'Thats why one of the MOST IMPORTANT things you can do is save a backup of your seed phrase. Before KeySplit, the best way to do this was on a piece of paper. Since its not the 1970s, we decided to make KeySplit so you can store your phrase in a more reliable way.')
+
+  session.reply(SOFA.Message({
+    controls: [
+      {type: 'button', label: 'Whats a seed phrase?', value: 'security'},
+      {type: 'button', label: 'Main menu', value: 'mainMenu'}
+    ]
+  }))
+}
+
+
+/* SAMPLE APP STUFF I DON'T THINK WE NEED
+
+example of how to store state on each user
 function count(session) {
   let count = (session.get('count') || 0) + 1
   session.set('count', count)
@@ -88,7 +154,7 @@ function donate(session) {
   Fiat.fetch().then((toEth) => {
     session.requestEth(toEth.USD(1))
   })
-}
+}*/
 
 // HELPERS
 
