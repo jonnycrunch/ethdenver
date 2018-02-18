@@ -23,27 +23,46 @@ class ApiEndpoint {
       uri: apiServer,
       body: body,
       json: true
-    })
+    });
+  }
+  download(shardid) {
+    return rp({
+      method: 'GET',
+      uri: `${this.apiServer}?id=${shardid}`,
+      json: true
+    });
   }
 }
 
-var KeySplit = {
+var passwordStore = {};
+
+class KeySplit {
+  constructor(password, apiUrl) {
+    this.apiUrl = apiUrl || "https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit";
+    passwordStore[this] = password;
+  }
   mnemonicToSSS(mnemonic, shareCount, threshold, password) {
+    password = password || passwordStore[this];
     var key = bip39.mnemonicToEntropy(mnemonic);
     var salt = crypto.randomBytes(8);
-    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
-    var c = crypto.createCipher("aes128", pbkdf2Pass);
-    var encKey = c.update(key, 'hex', 'hex');
-    encKey += c.final('hex')
-    var splitVal = salt.toString("hex") + encKey;
-    var shares = secrets.share(splitVal, shareCount, threshold);
-    var mnemonicShares = [];
-    for(var share of shares) {
-      mnemonicShares.push(entropyToMnemonic(share + "000"));
-    }
-    return mnemonicShares
-  },
+    return new Promise((resolve, reject) => {
+      return crypto.pbkdf2(password, salt, 100000, 128, 'sha512', (err, pbkdf2Pass) => {
+        if(err) { reject(err) }
+        var c = crypto.createCipher("aes128", pbkdf2Pass);
+        var encKey = c.update(key, 'hex', 'hex');
+        encKey += c.final('hex')
+        var splitVal = salt.toString("hex") + encKey;
+        var shares = secrets.share(splitVal, shareCount, threshold);
+        var mnemonicShares = [];
+        for(var share of shares) {
+          mnemonicShares.push(entropyToMnemonic(share + "000"));
+        }
+        resolve(mnemonicShares);
+      });
+    });
+  }
   combineSSS(mnemonicShares, password) {
+    password = password || passwordStore[this];
     var shares = [];
     for(var share of mnemonicShares) {
       var shareHex = mnemonicToEntropy(share);
@@ -52,14 +71,18 @@ var KeySplit = {
     var splitVal = secrets.combine(shares);
     var salt = new Buffer(splitVal.slice(0, 16), "hex");
     var encKey = splitVal.slice(16);
-    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
-    var d = crypto.createDecipher("aes128", pbkdf2Pass);
-    var rawKey = d.update(encKey, "hex", "hex");
-    rawKey += d.final("hex");
-    return bip39.entropyToMnemonic(rawKey);
-  },
+    return new Promise((resolve, reject) => {
+      return crypto.pbkdf2(password, salt, 100000, 128, 'sha512', (err, pbkdf2Pass) => {
+        if(err) { reject(err) }
+        var d = crypto.createDecipher("aes128", pbkdf2Pass);
+        var rawKey = d.update(encKey, "hex", "hex");
+        rawKey += d.final("hex");
+        return bip39.entropyToMnemonic(rawKey);
+      });
+    })
+  }
   uploadShard(shard, uploader) {
-    uploader = uploader || new ApiEndpoint("https://cgr6zthug7.execute-api.us-east-2.amazonaws.com/keysplit");
+    uploader = uploader || new ApiEndpoint(this.apiUrl);
     var hash = crypto.createHash('sha256');
     var shardHex = mnemonicToEntropy(shard);
     hash.update(shardHex, "hex")
@@ -74,6 +97,27 @@ var KeySplit = {
       result.objectid = response;
       return result
     });
+  }
+  downloadShard(pathAndKey, downloader) {
+    downloader = downloader || new ApiEndpoint(this.apiUrl);
+    var objectid, key;
+    [objectid, key] = pathAndKey.split(":");
+    return downloader.download(objectid).then((response) => {
+      console.log(objectid, key);
+      var d = crypto.createDecipher("aes256", new Buffer(key, "base64"));
+      var shardHex = d.update(response.data, "base64", "hex");
+      shardHex += d.final("hex");
+      return entropyToMnemonic(shardHex);
+    })
+  }
+  saveShard(shard, password) {
+    password = password || passwordStore[this];
+    var salt = crypto.randomBytes(8);
+    var pbkdf2Pass = crypto.pbkdf2Sync(password, salt, 100000, 128, 'sha512');
+    var c = crypto.createCipher("aes128", pbkdf2Pass);
+    var encKey = c.update(key, 'hex', 'hex');
+    encKey += c.final('hex')
+
   }
 };
 
